@@ -100,9 +100,9 @@ def embdding_sim(click_df, item_emb_df, save_path, topk):
 
     # 建立faiss索引
     item_index = faiss.IndexFlatIP(item_emb_np.shape[1])
-    item_index.add(item_emb_np)
+    item_index.add(item_emb_np) # type: ignore
     # 相似度查询，给每个索引位置上的向量返回topk个item以及相似度
-    sim, idx = item_index.search(item_emb_np, topk)  # 返回的是列表
+    sim, idx = item_index.search(item_emb_np, topk)  # type: ignore # 返回的是列表
 
     # 将向量检索的结果保存成原始id的对应关系
     item_sim_dict = collections.defaultdict(dict)
