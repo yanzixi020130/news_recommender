@@ -26,12 +26,12 @@ def itemcf_sim(df, item_created_time_dict, save_path, use_cache=True):
 
     # 缓存判断
     if use_cache and os.path.exists(save_path):
-        print(f"[itemcf_sim] ✅ 使用缓存文件：{save_path}")
+        print(f"[itemcf_sim] ✅ Using cached file: {save_path}")  # 使用缓存文件
         with open(save_path, 'rb') as f:
             return pickle.load(f)
 
     # 否则重新计算
-    print(f"[itemcf_sim] 重新计算相似度矩阵...")
+    print(f"[itemcf_sim] Recomputing similarity matrix...")  # 重新计算相似度矩阵...
 
     user_item_time_dict = get_user_item_time_dict(df)
 
@@ -69,7 +69,7 @@ def itemcf_sim(df, item_created_time_dict, save_path, use_cache=True):
     # 将得到的相似性矩阵保存到本地
     with open(save_path, 'wb') as f:
         pickle.dump(i2i_sim_, f)
-    print(f"[itemcf_sim] 相似度矩阵已保存至：{save_path}")
+    print(f"[itemcf_sim] Similarity matrix saved to: {save_path}")  # 相似度矩阵已保存至
 
     return i2i_sim_
 
@@ -150,11 +150,11 @@ def generate_itemcf_recall_dict(val_df,
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     if use_cache and os.path.exists(save_path):
-        print(f"[generate_user_recall_dict_itemcf] ✅ 使用缓存：{save_path}")
+        print(f"[generate_user_recall_dict_itemcf] ✅ Using cache: {save_path}")  # 使用缓存
         with open(save_path, 'rb') as f:
             return pickle.load(f)
 
-    print("[generate_user_recall_dict_itemcf] 🚀 正在生成 ItemCF 召回列表...")
+    print("[generate_user_recall_dict_itemcf] 🚀 Generating ItemCF recall list...")  # 正在生成 ItemCF 召回列表...
     user_recall_items_dict = {}
     for user in tqdm(val_df['user_id'].unique()):
         rec_items = item_based_recommend(
@@ -172,7 +172,7 @@ def generate_itemcf_recall_dict(val_df,
     with open(save_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
 
-    print(f"[generate_user_recall_dict_itemcf] ✅ 召回列表保存成功：{save_path}")
+    print(f"[generate_user_recall_dict_itemcf] ✅ Recall list saved: {save_path}")  # 召回列表保存成功
     return user_recall_items_dict
 
 # 仅使用 embedding 相似度作为召回通道
@@ -194,11 +194,11 @@ def generate_itemcf_embedding_recall_dict(val_df,
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     if use_cache and os.path.exists(save_path):
-        print(f"[generate_user_recall_dict_embedding] ✅ 使用缓存：{save_path}")
+        print(f"[generate_user_recall_dict_embedding] ✅ Using cache: {save_path}")  # 使用缓存
         with open(save_path, 'rb') as f:
             return pickle.load(f)
 
-    print("[generate_user_recall_dict_embedding] 🚀 正在生成 Embedding 召回列表...")
+    print("[generate_user_recall_dict_embedding] 🚀 Generating embedding recall list...")  # 正在生成 Embedding 召回列表...
     user_recall_items_dict = {}
     for user in tqdm(val_df['user_id'].unique()):
         rec_items = item_based_recommend(
@@ -216,7 +216,7 @@ def generate_itemcf_embedding_recall_dict(val_df,
     with open(save_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
 
-    print(f"[generate_user_recall_dict_embedding] ✅ 召回列表保存成功：{save_path}")
+    print(f"[generate_user_recall_dict_embedding] ✅ Recall list saved: {save_path}")  # 召回列表保存成功
     return user_recall_items_dict
 
 

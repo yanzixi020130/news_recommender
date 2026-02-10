@@ -11,7 +11,7 @@ def metrics_recall(user_recall_items_dict, val_df, topk=None):
     # 计算召回覆盖率
     covered_users = set(user_recall_items_dict.keys()) & set(val_user_items.keys())
     coverage = len(covered_users) / len(val_user_items)
-    print(f"📊 用户覆盖率: {coverage:.4f} ({len(covered_users)}/{len(val_user_items)})")
+    print(f"📊 User coverage: {coverage:.4f} ({len(covered_users)}/{len(val_user_items)})")  # 用户覆盖率
     
     # 多层次评估
     if topk is None:
@@ -24,7 +24,7 @@ def metrics_recall(user_recall_items_dict, val_df, topk=None):
                     hit += 1
             
             recall = round(hit / len(covered_users), 5) if covered_users else 0
-            print(f"📊 Recall@{k}: {recall:.5f} ({hit}/{len(covered_users)})")
+            print(f"📊 Recall@{k}: {recall:.5f} ({hit}/{len(covered_users)})")  # Recall 指标
             
             # 计算前10个物品的平均分数，判断分数分布
             if k == 10:
@@ -34,7 +34,7 @@ def metrics_recall(user_recall_items_dict, val_df, topk=None):
                     if scores:
                         avg_scores.append(np.mean(scores))
                 if avg_scores:
-                    print(f"📊 前10个物品的平均分数: {np.mean(avg_scores):.4f}")
+                    print(f"📊 Average score of top-10 items: {np.mean(avg_scores):.4f}")  # 前10个物品的平均分数
         
         # 计算最大的k
         k = 50
@@ -58,5 +58,5 @@ def metrics_recall(user_recall_items_dict, val_df, topk=None):
                 hit += 1
         
         recall = round(hit / len(covered_users), 5) if covered_users else 0
-        print(f"📊 Recall@{topk}: {recall:.5f} ({hit}/{len(covered_users)})")
+        print(f"📊 Recall@{topk}: {recall:.5f} ({hit}/{len(covered_users)})")  # Recall 指标
         return recall

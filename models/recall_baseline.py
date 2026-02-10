@@ -25,12 +25,12 @@ def itemcf_sim(df, item_created_time_dict=None, save_path='cache/itemcf_sim.pkl'
 
     # === 使用缓存 ===
     if use_cache and os.path.exists(save_path):
-        print(f"[itemcf_sim_baseline] ✅ 使用缓存文件：{save_path}")
+        print(f"[itemcf_sim_baseline] ✅ Using cached file: {save_path}")  # 使用缓存文件
         with open(save_path, 'rb') as f:
             return pickle.load(f)
 
     # === 正式计算 ===
-    print("[itemcf_sim_baseline] 🚧 正在计算相似度矩阵（无加权）...")
+    print("[itemcf_sim_baseline] 🚧 Computing similarity matrix (no weighting)...")  # 正在计算相似度矩阵（无加权）...
     user_item_time_dict = get_user_item_time(df)
 
     i2i_sim = {}
@@ -53,7 +53,7 @@ def itemcf_sim(df, item_created_time_dict=None, save_path='cache/itemcf_sim.pkl'
     # === 保存缓存 ===
     with open(save_path, 'wb') as f:
         pickle.dump(i2i_sim_, f)
-    print(f"[itemcf_sim_baseline] ✅ 相似度矩阵已保存至：{save_path}")
+    print(f"[itemcf_sim_baseline] ✅ Similarity matrix saved to: {save_path}")  # 相似度矩阵已保存至
 
     return i2i_sim_
 
@@ -126,11 +126,11 @@ def generate_user_recall_dict(val_df,
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     if use_cache and os.path.exists(save_path):
-        print(f"[generate_user_recall_dict] ✅ 使用缓存：{save_path}")
+        print(f"[generate_user_recall_dict] ✅ Using cache: {save_path}")  # 使用缓存
         with open(save_path, 'rb') as f:
             return pickle.load(f)
 
-    print("[generate_user_recall_dict] 🚀 正在生成用户召回列表...")
+    print("[generate_user_recall_dict] 🚀 Generating user recall list...")  # 正在生成用户召回列表...
 
     user_recall_items_dict = {}
     for user in tqdm(val_df['user_id'].unique()):
@@ -147,5 +147,5 @@ def generate_user_recall_dict(val_df,
     with open(save_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
 
-    print(f"[generate_user_recall_dict] ✅ 召回列表保存成功：{save_path}")
+    print(f"[generate_user_recall_dict] ✅ Recall list saved: {save_path}")  # 召回列表保存成功
     return user_recall_items_dict

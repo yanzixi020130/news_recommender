@@ -136,17 +136,17 @@ def gen_data_set(data, negsample=0, max_hist_len=30, cache_path=None, use_cache=
     """
     # 如果启用缓存且缓存文件存在，直接加载
     if use_cache and cache_path and os.path.exists(cache_path):
-        print(f"✅ 从缓存加载训练集和测试集: {cache_path}")
+        print(f"✅ Loaded train/test datasets from cache: {cache_path}")  # 从缓存加载训练集和测试集
         with open(cache_path, 'rb') as f:
             return pickle.load(f)
     
-    print("🚀 开始生成训练集和测试集...")
+    print("🚀 Generating training and test datasets...")  # 开始生成训练集和测试集...
     data.sort_values("click_timestamp", inplace=True)
     
     # 获取编码后的物品ID范围
     item_ids = data['click_article_id_encoded'].unique()
     max_item_id = item_ids.max()
-    print(f"编码后物品ID范围: 0-{max_item_id}")
+    print(f"Encoded item ID range: 0-{max_item_id}")  # 编码后物品ID范围
     
     train_set = []
     test_set = []
@@ -189,7 +189,7 @@ def gen_data_set(data, negsample=0, max_hist_len=30, cache_path=None, use_cache=
     random.shuffle(test_set)
     
     # 验证生成的数据集
-    print("验证数据集...")
+    print("Validating dataset...")  # 验证数据集...
     max_user_id = data['user_id_encoded'].max()
     max_item_id = data['click_article_id_encoded'].max()
     
@@ -199,13 +199,13 @@ def gen_data_set(data, negsample=0, max_hist_len=30, cache_path=None, use_cache=
         assert target_item <= max_item_id, f"物品ID {target_item} 超出范围 {max_item_id}"
         assert all(item <= max_item_id for item in hist_items), f"历史物品列表包含超出范围的ID"
     
-    print(f"✅ 数据集验证通过")
-    print(f"训练集大小: {len(train_set)}")
-    print(f"测试集大小: {len(test_set)}")
+    print(f"✅ Dataset validation passed")  # 数据集验证通过
+    print(f"Train set size: {len(train_set)}")  # 训练集大小
+    print(f"Test set size: {len(test_set)}")  # 测试集大小
     
     # 如果指定了缓存路径，保存结果
     if cache_path:
-        print(f"💾 保存训练集和测试集到缓存: {cache_path}")
+        print(f"💾 Saving train/test datasets to cache: {cache_path}")  # 保存训练集和测试集到缓存
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
         with open(cache_path, 'wb') as f:
             pickle.dump((train_set, test_set), f)
@@ -218,7 +218,7 @@ def train_youtube_dnn(train_dataloader, test_dataloader, model, device, epochs=5
     """
     训练YouTubeDNN模型，添加错误处理和数据验证
     """
-    print(f"[train_youtube_dnn] 开始训练，设备: {device}")
+    print(f"[train_youtube_dnn] Starting training, device: {device}")  # 开始训练，设备
     
     # 1. 设置CUDA环境变量，帮助调试
     os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
@@ -255,15 +255,15 @@ def train_youtube_dnn(train_dataloader, test_dataloader, model, device, epochs=5
                     
                     # 打印详细的调试信息
                     if batch_idx == 0:
-                        print(f"用户ID范围: {user_id.min()}-{user_id.max()}, 嵌入层范围: {model.user_embedding.num_embeddings}")
-                        print(f"物品ID范围: {hist_item_seq.max()}, 嵌入层范围: {model.item_embedding.num_embeddings}")
+                        print(f"User ID range: {user_id.min()}-{user_id.max()}, embedding size: {model.user_embedding.num_embeddings}")  # 用户ID范围/嵌入层范围
+                        print(f"Item ID range: {hist_item_seq.max()}, embedding size: {model.item_embedding.num_embeddings}")  # 物品ID范围/嵌入层范围
                     
                     # 严格的范围检查
                     if user_id.max() >= model.user_embedding.num_embeddings:
-                        print(f"警告：用户ID {user_id.max()} 超出范围 {model.user_embedding.num_embeddings}")
+                        print(f"Warning: user ID {user_id.max()} out of range {model.user_embedding.num_embeddings}")  # 警告：用户ID超出范围
                         continue
                     if hist_item_seq.max() >= model.item_embedding.num_embeddings:
-                        print(f"警告：物品ID {hist_item_seq.max()} 超出范围 {model.item_embedding.num_embeddings}")
+                        print(f"Warning: item ID {hist_item_seq.max()} out of range {model.item_embedding.num_embeddings}")  # 警告：物品ID超出范围
                         continue
                     
                     # 6. 移动数据到设备
@@ -293,7 +293,7 @@ def train_youtube_dnn(train_dataloader, test_dataloader, model, device, epochs=5
                               f"Avg Loss: {avg_train_loss:.4f}")
                         
                 except RuntimeError as e:
-                    print(f"训练批次 {batch_idx} 出错: {str(e)}")
+                    print(f"Training batch {batch_idx} error: {str(e)}")  # 训练批次出错
                     torch.cuda.empty_cache()
                     continue
             
@@ -301,7 +301,7 @@ def train_youtube_dnn(train_dataloader, test_dataloader, model, device, epochs=5
             avg_train_loss = train_loss / max(1, train_batches)
             
             # 验证阶段
-            print(f"\n开始第 {epoch+1} 轮验证...")
+            print(f"\nStarting validation epoch {epoch+1}...")  # 开始第...轮验证...
             model.eval()
             val_loss = 0.0
             val_batches = 0
@@ -323,11 +323,11 @@ def train_youtube_dnn(train_dataloader, test_dataloader, model, device, epochs=5
                         val_batches += 1
                         
                         if (batch_idx + 1) % 100 == 0:
-                            print(f"  验证批次 {batch_idx+1}/{len(test_dataloader)}, "
+                                print(f"  Validation batch {batch_idx+1}/{len(test_dataloader)}, "
                                   f"Loss: {loss.item():.4f}")
                             
                     except Exception as e:
-                        print(f"验证批次 {batch_idx} 出错: {str(e)}")
+                        print(f"Validation batch {batch_idx} error: {str(e)}")  # 验证批次出错
                         continue
             
             # 计算平均验证损失
@@ -341,18 +341,18 @@ def train_youtube_dnn(train_dataloader, test_dataloader, model, device, epochs=5
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
                 best_model_state = {k: v.cpu() for k, v in model.state_dict().items()}
-                print(f"发现更好的模型，验证损失: {best_val_loss:.4f}")
+                print(f"Found better model, validation loss: {best_val_loss:.4f}")  # 发现更好的模型
         
         # 恢复最佳模型状态
         if best_model_state is not None:
             model.load_state_dict(best_model_state)
-            print(f"已恢复最佳模型，验证损失: {best_val_loss:.4f}")
+            print(f"Restored best model, validation loss: {best_val_loss:.4f}")  # 已恢复最佳模型
         
     except Exception as e:
-        print(f"训练过程发生错误: {str(e)}")
+        print(f"Training process error: {str(e)}")  # 训练过程发生错误
         raise  # 抛出异常以便查看完整的错误堆栈
         
-    print("[train_youtube_dnn] 训练完成!")
+    print("[train_youtube_dnn] Training completed!")  # 训练完成
     return model
 
 
@@ -363,20 +363,20 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
     cache_path = os.path.join(save_path, 'youtube_u2i_dict.pkl')
     dataset_cache = os.path.join(save_path, 'youtube_dataset.pkl')
     
-    print("[youtubednn_u2i_dict] 🚀 开始YouTubeDNN处理...")
+    print("[youtubednn_u2i_dict] 🚀 Starting YouTubeDNN processing...")  # 开始YouTubeDNN处理...
     
     # 确保缓存目录存在
     os.makedirs(save_path, exist_ok=True)
     
     # 1. 修改ID编码部分
-    print("[youtubednn_u2i_dict] 开始ID编码...")
+    print("[youtubednn_u2i_dict] Starting ID encoding...")  # 开始ID编码...
     user_encoder = LabelEncoder()
     item_encoder = LabelEncoder()
     
     # 获取所有可能的物品ID
     all_item_ids = data['click_article_id'].unique()
     max_item_id = max(all_item_ids)
-    print(f"[youtubednn_u2i_dict] 原始物品ID范围: 0-{max_item_id}")
+    print(f"[youtubednn_u2i_dict] Raw item ID range: 0-{max_item_id}")  # 原始物品ID范围
     
     # 确保ID从0开始连续
     data['user_id_encoded'] = user_encoder.fit_transform(data['user_id'])
@@ -388,8 +388,8 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
     
     # 验证编码结果
     max_encoded_item = data['click_article_id_encoded'].max()
-    print(f"[youtubednn_u2i_dict] 编码后 - 用户数量: {user_count}, 物品数量: {item_count}")
-    print(f"[youtubednn_u2i_dict] 编码后物品ID最大值: {max_encoded_item}")
+    print(f"[youtubednn_u2i_dict] Encoded counts - users: {user_count}, items: {item_count}")  # 编码后用户数量/物品数量
+    print(f"[youtubednn_u2i_dict] Max encoded item ID: {max_encoded_item}")  # 编码后物品ID最大值
     
     # 创建ID映射字典以便调试
     id_mapping = dict(zip(item_encoder.classes_, item_encoder.transform(item_encoder.classes_)))
@@ -397,8 +397,8 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
     # 验证所有物品ID都在正确范围内
     invalid_ids = data[data['click_article_id_encoded'] >= item_count]['click_article_id'].unique()
     if len(invalid_ids) > 0:
-        print(f"[警告] 发现 {len(invalid_ids)} 个超出范围的物品ID")
-        print(f"样例: {invalid_ids[:5]}")
+        print(f"[Warning] Found {len(invalid_ids)} item IDs out of range")  # 发现超出范围的物品ID
+        print(f"Samples: {invalid_ids[:5]}")  # 样例
         
     # 创建模型实例 - 使用验证后的item_count
     model = YouTubeDNNModel(
@@ -411,7 +411,7 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
     
     # 2. 检查是否存在预训练模型
     if os.path.exists(model_cache):
-        print(f"[youtubednn_u2i_dict] ✅ 加载预训练模型：{model_cache}")
+        print(f"[youtubednn_u2i_dict] ✅ Loaded pretrained model: {model_cache}")  # 加载预训练模型
         model.load_state_dict(torch.load(model_cache))
     else:
         # 如果没有预训练模型，进行训练
@@ -477,16 +477,16 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
     item_embeddings = {}
     
     if os.path.exists(embeddings_cache):
-        print(f"[youtubednn_u2i_dict] ✅ 发现嵌入缓存: {embeddings_cache}")
+        print(f"[youtubednn_u2i_dict] ✅ Found embedding cache: {embeddings_cache}")  # 发现嵌入缓存
         with open(embeddings_cache, 'rb') as f:
             cache_data = pickle.load(f)
             user_embeddings = cache_data['user_embeddings']
             item_embeddings = cache_data['item_embeddings']
     else:
-        print("[youtubednn_u2i_dict] ⚠️ 未找到嵌入缓存，将重新计算嵌入")
+        print("[youtubednn_u2i_dict] ⚠️ Embedding cache not found, recomputing embeddings")  # 未找到嵌入缓存，将重新计算嵌入
         # 设置设备
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"[youtubednn_u2i_dict] 使用设备: {device}")
+        print(f"[youtubednn_u2i_dict] Using device: {device}")  # 使用设备
 
         # 将模型移到正确的设备上
         model = model.to(device)
@@ -502,7 +502,7 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
                 item_embeddings[orig_item_id] = item_embs[idx]
             
             # 为所有用户计算嵌入
-            for user_id in tqdm(data['user_id'].unique(), desc="计算用户嵌入"):
+            for user_id in tqdm(data['user_id'].unique(), desc="Computing user embeddings"):
                 # 获取用户的历史交互
                 user_hist = data[data['user_id'] == user_id]['click_article_id_encoded'].tolist()
                 if not user_hist:
@@ -522,7 +522,7 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
                     user_emb = model.get_user_embedding(user_tensor, hist_tensor, seq_len).cpu().numpy()  # 先转到CPU
                     user_embeddings[user_id] = user_emb.squeeze() / np.linalg.norm(user_emb)
                 except Exception as e:
-                    print(f"[youtubednn_u2i_dict] ⚠️ 处理用户 {user_id} 嵌入时出错: {str(e)}")
+                    print(f"[youtubednn_u2i_dict] ⚠️ Error processing embedding for user {user_id}: {str(e)}")  # 处理用户嵌入时出错
                     continue
         
         # 保存嵌入
@@ -536,7 +536,7 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
             pickle.dump(cache_data, f)
     
     # 使用Faiss进行向量检索
-    print("[youtubednn_u2i_dict] 使用Faiss进行向量检索...")
+    print("[youtubednn_u2i_dict] Using Faiss for vector retrieval...")  # 使用Faiss进行向量检索...
     user_ids = list(user_embeddings.keys())  # 使用user_embeddings而不是user_embs
     user_embs = np.array([user_embeddings[user_id] for user_id in user_ids], dtype=np.float32)
     
@@ -565,24 +565,24 @@ def youtubednn_u2i_dict(data, save_path="./cache/", topk=20, epochs=5, batch_siz
     with open(cache_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
     
-    print(f"[youtubednn_u2i_dict] ✅ 召回结果已保存至: {cache_path}")
+    print(f"[youtubednn_u2i_dict] ✅ Recall results saved to: {cache_path}")  # 召回结果已保存至
     
     # 修改检查代码部分
-    print("[youtubednn_u2i_dict] 检查嵌入质量...")
+    print("[youtubednn_u2i_dict] Checking embedding quality...")  # 检查嵌入质量...
     with torch.no_grad():
         # 抽样检查一些用户嵌入和物品嵌入的余弦相似度
         # 从字典中抽样，而不是从numpy数组中抽样
         user_sample = list(user_embeddings.items())[:3]
         item_sample = list(item_embeddings.items())[:5]
         
-        print("样本用户嵌入:")
+        print("Sample user embeddings:")  # 样本用户嵌入
         for u_id, u_emb in user_sample:
-            print(f"用户ID: {u_id}, 嵌入范数: {np.linalg.norm(u_emb)}")
+            print(f"User ID: {u_id}, embedding norm: {np.linalg.norm(u_emb)}")  # 用户ID/嵌入范数
             
             # 检查与样本物品的相似度
             for i_id, i_emb in item_sample:
                 sim = np.dot(u_emb, i_emb) / (np.linalg.norm(u_emb) * np.linalg.norm(i_emb))
-                print(f"  与物品 {i_id} 的相似度: {sim:.4f}")
+                print(f"  Similarity to item {i_id}: {sim:.4f}")  # 与物品...的相似度
     
     return user_recall_items_dict 
 
@@ -615,11 +615,11 @@ def get_youtube_recall(train_df, val_df, save_path, use_cache=True, epochs=10,
     
     # 检查召回结果缓存
     if use_cache and os.path.exists(cache_path):
-        print(f"[get_youtube_recall] ✅ 使用缓存：{cache_path}")
+        print(f"[get_youtube_recall] ✅ Using cache: {cache_path}")  # 使用缓存
         with open(cache_path, 'rb') as f:
             return pickle.load(f)
     
-    print("[get_youtube_recall] 🚀 生成YouTubeDNN召回结果...")
+    print("[get_youtube_recall] 🚀 Generating YouTubeDNN recall results...")  # 生成YouTubeDNN召回结果...
     
     # 确保所有ID都经过编码
     item_encoder = LabelEncoder()
@@ -661,19 +661,19 @@ def get_youtube_recall(train_df, val_df, save_path, use_cache=True, epochs=10,
     
     # 检查模型缓存
     if use_cache and os.path.exists(model_path):
-        print(f"[get_youtube_recall] ✅ 加载预训练模型：{model_path}")
+        print(f"[get_youtube_recall] ✅ Loaded pretrained model: {model_path}")  # 加载预训练模型
         model.load_state_dict(torch.load(model_path))
     
     # 检查嵌入缓存
     if use_cache and os.path.exists(user_emb_path) and os.path.exists(item_emb_path):
-        print(f"[get_youtube_recall] ✅ 加载用户和物品嵌入")
+        print(f"[get_youtube_recall] ✅ Loaded user and item embeddings")  # 加载用户和物品嵌入
         with open(user_emb_path, 'rb') as f:
             user_embeddings = pickle.load(f)
         with open(item_emb_path, 'rb') as f:
             item_embeddings = pickle.load(f)
     else:
         # 生成用户和物品的嵌入
-        print("[get_youtube_recall] 计算用户和物品嵌入...")
+        print("[get_youtube_recall] Computing user and item embeddings...")  # 计算用户和物品嵌入...
         model.eval()
         
         # 为所有物品生成嵌入
@@ -692,7 +692,7 @@ def get_youtube_recall(train_df, val_df, save_path, use_cache=True, epochs=10,
         max_seq_len = 30
         
         with torch.no_grad():
-            for user_id in tqdm(unique_users, desc="计算用户嵌入"):
+            for user_id in tqdm(unique_users, desc="Computing user embeddings"):
                 if user_id not in user_hist_dict or len(user_hist_dict[user_id]) == 0:
                     continue
                     
@@ -716,7 +716,7 @@ def get_youtube_recall(train_df, val_df, save_path, use_cache=True, epochs=10,
                     user_emb = model.get_user_embedding(user_tensor, hist_tensor, seq_len).numpy()
                     user_embeddings[user_id] = user_emb.squeeze() / np.linalg.norm(user_emb)
                 except Exception as e:
-                    print(f"[get_youtube_recall] ⚠️ 处理用户 {user_id} 嵌入时出错: {str(e)}")
+                    print(f"[get_youtube_recall] ⚠️ Error processing embedding for user {user_id}: {str(e)}")  # 处理用户嵌入时出错
                     continue
         
         # 保存用户嵌入
@@ -724,7 +724,7 @@ def get_youtube_recall(train_df, val_df, save_path, use_cache=True, epochs=10,
             pickle.dump(user_embeddings, f)
     
     # 准备向量检索
-    print("[get_youtube_recall] 使用Faiss进行向量检索...")
+    print("[get_youtube_recall] Using Faiss for vector retrieval...")  # 使用Faiss进行向量检索...
     user_ids = list(user_embeddings.keys())
     user_embs = np.array([user_embeddings[user_id] for user_id in user_ids], dtype=np.float32)
     
@@ -756,5 +756,5 @@ def get_youtube_recall(train_df, val_df, save_path, use_cache=True, epochs=10,
     with open(cache_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
     
-    print(f"[get_youtube_recall] ✅ 召回结果已保存至：{cache_path}")
+    print(f"[get_youtube_recall] ✅ Recall results saved to: {cache_path}")  # 召回结果已保存至
     return user_recall_items_dict 

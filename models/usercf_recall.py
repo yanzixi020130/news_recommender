@@ -42,11 +42,11 @@ def usercf_sim(all_click_df, user_activate_degree_dict, save_path, use_cache=Tru
 
     # === 缓存加载逻辑 ===
     if use_cache and os.path.exists(save_path):
-        print(f"[usercf_sim] ✅ 使用缓存文件：{save_path}")
+        print(f"[usercf_sim] ✅ Using cached file: {save_path}")  # 使用缓存文件
         with open(save_path, 'rb') as f:
             return pickle.load(f)
 
-    print("[usercf_sim] 🚧 正在重新计算用户相似度矩阵...")
+    print("[usercf_sim] 🚧 Recomputing user similarity matrix...")  # 正在重新计算用户相似度矩阵...
 
     # === 正式计算 ===
     item_user_time_dict = get_item_user_time_dict(all_click_df)
@@ -75,7 +75,7 @@ def usercf_sim(all_click_df, user_activate_degree_dict, save_path, use_cache=Tru
     with open(save_path, 'wb') as f:
         pickle.dump(u2u_sim_, f)
 
-    print(f"[usercf_sim] ✅ 相似度矩阵已保存至：{save_path}")
+    print(f"[usercf_sim] ✅ Similarity matrix saved to: {save_path}")  # 相似度矩阵已保存至
     return u2u_sim_
 
 
@@ -88,12 +88,12 @@ def user_based_recommend(user_id, user_item_time_dict, u2u_sim, sim_user_topk, r
     # 修改警告输出方式
     if user_id not in u2u_sim:
         if user_id % 1000 == 0:  # 每1000个用户才输出一次
-            print(f"⚠️ 用户ID {user_id} 不在相似度矩阵中 (仅显示每1000个)")
+            print(f"⚠️ User ID {user_id} not in similarity matrix (only every 1000 shown)")  # 用户ID 不在相似度矩阵中 (仅显示每1000个)
         # 返回热门物品作为后备方案
         return [(item, -i-100) for i, item in enumerate(item_topk_click[:recall_item_num])]
     
     if user_id not in user_item_time_dict:
-        print(f"⚠️ 用户 {user_id} 没有历史交互记录")
+        print(f"⚠️ User {user_id} has no interaction history")  # 用户没有历史交互记录
         # 返回热门物品作为后备方案
         return [(item, -i-100) for i, item in enumerate(item_topk_click[:recall_item_num])]
     
@@ -153,13 +153,13 @@ def generate_usercf_recall_dict(click_df, user_item_time_dict, u2u_sim, sim_user
     
     # 检查缓存
     if use_cache and os.path.exists(cache_path):
-        print(f"[generate_usercf_recall_dict] ✅ 使用缓存：{cache_path}")
+        print(f"[generate_usercf_recall_dict] ✅ Using cache: {cache_path}")  # 使用缓存
         with open(cache_path, 'rb') as f:
             return pickle.load(f)
     
     user_recall_items_dict = {}
     
-    print("生成用户召回结果...")
+    print("Generating user recall results...")  # 生成用户召回结果...
     total_users = len(click_df['user_id'].unique())
     missing_users = 0
     
@@ -202,14 +202,14 @@ def generate_usercf_recall_dict(click_df, user_item_time_dict, u2u_sim, sim_user
     
     # 打印相似度矩阵覆盖率统计
     coverage = (total_users - missing_users) / total_users
-    print(f"\n[generate_usercf_recall_dict] 用户相似度矩阵覆盖率: {coverage:.4f}")
-    print(f"总用户数: {total_users}, 缺失用户数: {missing_users}")
+    print(f"\n[generate_usercf_recall_dict] User similarity coverage: {coverage:.4f}")  # 用户相似度矩阵覆盖率
+    print(f"Total users: {total_users}, missing users: {missing_users}")  # 总用户数 / 缺失用户数
     
     # 保存结果
     os.makedirs(os.path.dirname(cache_path), exist_ok=True)
     with open(cache_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
-    print(f"[generate_usercf_recall_dict] ✅ 召回结果已保存至: {cache_path}")
+    print(f"[generate_usercf_recall_dict] ✅ Recall results saved to: {cache_path}")  # 召回结果已保存至
     
     return user_recall_items_dict
 
@@ -251,19 +251,19 @@ def u2u_embedding_sim(click_df, user_emb_dict, save_path='./cache/', topk=20, us
     cache_path = save_path if save_path.endswith('.pkl') else os.path.join(save_path, 'youtube_u2u_sim.pkl')
     
     if use_cache and os.path.exists(cache_path):
-        print(f"[u2u_embedding_sim] ✅ 加载用户相似度缓存: {cache_path}")
+        print(f"[u2u_embedding_sim] ✅ Loaded user similarity cache: {cache_path}")  # 加载用户相似度缓存
         with open(cache_path, 'rb') as f:
             u2u_sim = pickle.load(f)
     else:
-        print("[u2u_embedding_sim] 计算用户相似度矩阵...")
+        print("[u2u_embedding_sim] Computing user similarity matrix...")  # 计算用户相似度矩阵...
         
         # 检查用户嵌入是否为空
         if not user_emb_dict:
-            print("[u2u_embedding_sim] ⚠️ 用户嵌入字典为空！")
+            print("[u2u_embedding_sim] ⚠️ User embedding dictionary is empty!")  # 用户嵌入字典为空！
             return {}
             
         # 获取所有用户ID和对应的嵌入
-        print(f"[u2u_embedding_sim] 用户嵌入数量: {len(user_emb_dict)}")
+        print(f"[u2u_embedding_sim] User embedding count: {len(user_emb_dict)}")  # 用户嵌入数量
         
         # 转换嵌入格式
         all_user_ids = []
@@ -279,7 +279,7 @@ def u2u_embedding_sim(click_df, user_emb_dict, save_path='./cache/', topk=20, us
             user_embeddings.append(emb)
         
         user_embeddings = np.array(user_embeddings, dtype=np.float32)
-        print(f"[u2u_embedding_sim] 嵌入矩阵形状: {user_embeddings.shape}")
+        print(f"[u2u_embedding_sim] Embedding matrix shape: {user_embeddings.shape}")  # 嵌入矩阵形状
         
         # 归一化嵌入
         norms = np.linalg.norm(user_embeddings, axis=1, keepdims=True)
@@ -301,7 +301,7 @@ def u2u_embedding_sim(click_df, user_emb_dict, save_path='./cache/', topk=20, us
                            for idx, score in zip(sim_idx[i][1:], sim_scores[i][1:])]
             u2u_sim[user_id] = similar_users
         
-        print(f"[u2u_embedding_sim] 计算完成，用户数: {len(u2u_sim)}")
+        print(f"[u2u_embedding_sim] Computation done, user count: {len(u2u_sim)}")  # 计算完成，用户数
         
         # 保存结果
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
@@ -309,13 +309,13 @@ def u2u_embedding_sim(click_df, user_emb_dict, save_path='./cache/', topk=20, us
             pickle.dump(u2u_sim, f)
     
     # 打印一些统计信息
-    print(f"[u2u_embedding_sim] 相似度矩阵中的用户数: {len(u2u_sim)}")
+    print(f"[u2u_embedding_sim] Users in similarity matrix: {len(u2u_sim)}")  # 相似度矩阵中的用户数
     if len(u2u_sim) > 0:
         sample_user = next(iter(u2u_sim))
-        print(f"[u2u_embedding_sim] 样例 - 用户{sample_user}的相似用户数: {len(u2u_sim[sample_user])}")
+        print(f"[u2u_embedding_sim] Sample - user {sample_user} similar user count: {len(u2u_sim[sample_user])}")  # 样例 - 用户...的相似用户数
         # 打印一些样例相似度
-        print("\n相似度样例:")
+        print("\nSimilarity samples:")  # 相似度样例
         for sim_user, sim_score in u2u_sim[sample_user][:3]:
-            print(f"用户{sample_user} -> 用户{sim_user}: {sim_score:.4f}")
+            print(f"User {sample_user} -> User {sim_user}: {sim_score:.4f}")  # 用户... -> 用户...
     
     return u2u_sim

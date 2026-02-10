@@ -57,12 +57,12 @@ def get_item_emb_dict(data_path, save_path):
 
     # ✅ 如果文件已存在，直接读取返回
     if os.path.exists(pkl_path):
-        print("🔄 已存在 pkl 文件，直接加载...")
+        print("🔄 PKL file exists, loading directly...")  # 已存在 pkl 文件，直接加载...
         with open(pkl_path, 'rb') as f:
             return pickle.load(f)
 
     # 否则才计算并保存
-    print("📥 正在读取 CSV 并计算 Embedding...")
+    print("📥 Reading CSV and computing embeddings...")  # 正在读取 CSV 并计算 Embedding...
     item_emb_df = pd.read_csv(os.path.join(data_path, 'articles_emb.csv'))
 
     # embedding 向量的归一化（按行单位化）

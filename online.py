@@ -25,7 +25,7 @@ cache_dir = './cache/online'  # 改为相对路径
 # 确保缓存目录存在
 os.makedirs(cache_dir, exist_ok=True)
 
-print(f"缓存目录: {cache_dir}")
+print(f"Cache directory: {cache_dir}")  # 缓存目录
 
 def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10, batch_size=64, embedding_dim=64, recall_num=50):
     """
@@ -55,11 +55,11 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
     
     # 检查召回结果缓存
     if use_cache and os.path.exists(cache_path):
-        print(f"[get_youtube_recall] ✅ 使用缓存：{cache_path}")
+        print(f"[get_youtube_recall] ✅ Using cache: {cache_path}")  # 使用缓存
         with open(cache_path, 'rb') as f:
             return pickle.load(f)
     
-    print("[get_youtube_recall] 🚀 生成YouTubeDNN召回结果...")
+    print("[get_youtube_recall] 🚀 Generating YouTubeDNN recall results...")  # 生成YouTubeDNN召回结果...
     
     # 仅使用用户和物品ID，简化处理
     df = pd.concat([train_df, test_df], ignore_index=True)
@@ -76,7 +76,7 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
     user_count = len(user_id_map)
     item_count = len(item_id_map)
     
-    print(f"[get_youtube_recall] 用户数量: {user_count}, 物品数量: {item_count}")
+    print(f"[get_youtube_recall] User count: {user_count}, item count: {item_count}")  # 用户数量 / 物品数量
     
     # 获取用户历史交互，使用映射后的ID
     user_hist_dict = {}
@@ -90,19 +90,19 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
     
     # 检查模型缓存
     if use_cache and os.path.exists(model_path):
-        print(f"[get_youtube_recall] ✅ 加载预训练模型：{model_path}")
+        print(f"[get_youtube_recall] ✅ Loaded pretrained model: {model_path}")  # 加载预训练模型
         model.load_state_dict(torch.load(model_path))
     
     # 检查嵌入缓存
     if use_cache and os.path.exists(user_emb_path) and os.path.exists(item_emb_path):
-        print(f"[get_youtube_recall] ✅ 加载用户和物品嵌入")
+        print(f"[get_youtube_recall] ✅ Loaded user and item embeddings")  # 加载用户和物品嵌入
         with open(user_emb_path, 'rb') as f:
             user_embeddings = pickle.load(f)
         with open(item_emb_path, 'rb') as f:
             item_embeddings = pickle.load(f)
     else:
         # 生成用户和物品的嵌入
-        print("[get_youtube_recall] 计算用户和物品嵌入...")
+        print("[get_youtube_recall] Computing user and item embeddings...")  # 计算用户和物品嵌入...
         model.eval()
         
         # 为所有物品生成嵌入（使用映射后的ID）
@@ -121,7 +121,7 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
         max_seq_len = 30
         
         with torch.no_grad():
-            for mapped_user_id, hist_items in tqdm(user_hist_dict.items(), desc="计算用户嵌入"):
+            for mapped_user_id, hist_items in tqdm(user_hist_dict.items(), desc="Computing user embeddings"):
                 if not hist_items:
                     continue
                     
@@ -142,7 +142,7 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
                     original_user_id = user_id_reverse_map[mapped_user_id]
                     user_embeddings[original_user_id] = user_emb.squeeze() / np.linalg.norm(user_emb)
                 except Exception as e:
-                    print(f"[get_youtube_recall] ⚠️ 处理用户 {mapped_user_id} 嵌入时出错: {str(e)}")
+                    print(f"[get_youtube_recall] ⚠️ Error processing embedding for user {mapped_user_id}: {str(e)}")  # 处理用户嵌入时出错
                     continue
         
         # 保存用户嵌入
@@ -150,7 +150,7 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
             pickle.dump(user_embeddings, f)
     
     # 准备向量检索
-    print("[get_youtube_recall] 使用Faiss进行向量检索...")
+    print("[get_youtube_recall] Using Faiss for vector retrieval...")  # 使用Faiss进行向量检索...
     user_ids = list(user_embeddings.keys())
     user_embs = np.array([user_embeddings[user_id] for user_id in user_ids], dtype=np.float32)
     
@@ -182,7 +182,7 @@ def get_youtube_recall(train_df, test_df, save_path, use_cache=False, epochs=10,
     with open(cache_path, 'wb') as f:
         pickle.dump(user_recall_items_dict, f)
     
-    print(f"[get_youtube_recall] ✅ 召回结果已保存至：{cache_path}")
+    print(f"[get_youtube_recall] ✅ Recall results saved to: {cache_path}")  # 召回结果已保存至
     return user_recall_items_dict
 
 def combine_recall_results(user_multi_recall_dict, weight_dict=None, topk=25, save_path='cache/'):
@@ -220,9 +220,9 @@ def combine_recall_results(user_multi_recall_dict, weight_dict=None, topk=25, sa
             
         return norm_sorted_item_list
     
-    print('多路召回合并...')
+    print('Combining multiple recall results...')  # 多路召回合并...
     for method, user_recall_items in tqdm(user_multi_recall_dict.items()):
-        print(method + '...')
+        print(method + '...')  # 召回方法名称
         # 在计算最终召回结果的时候，也可以为每一种召回结果设置一个权重
         if weight_dict is None:
             recall_method_weight = 1
@@ -253,33 +253,33 @@ def combine_recall_results(user_multi_recall_dict, weight_dict=None, topk=25, sa
     return final_recall_items_dict_rank
 
 def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embedding_dim=32):
-    print(f"\n📂 当前使用的缓存目录: {cache_dir}")
+    print(f"\n📂 Current cache directory: {cache_dir}")  # 当前使用的缓存目录
     
     # 检查现有缓存文件
     if os.path.exists(cache_dir):
         cache_files = os.listdir(cache_dir)
-        print("\n现有缓存文件:")
+        print("\nExisting cache files:")  # 现有缓存文件
         for file in cache_files:
             file_path = os.path.join(cache_dir, file)
             file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
-            print(f"  - {file} (更新时间: {file_time})")
+            print(f"  - {file} (updated: {file_time})")  # 更新时间
     
     # 统一使用一个模型文件名
     model_cache = os.path.join(cache_dir, 'youtube_model.pth')  # 使用实际保存的文件名
     
     # 如果模型缓存存在，直接加载
     if use_cache and os.path.exists(model_cache):
-        print(f"\n✅ 发现模型缓存: {model_cache}")
-        print(f"   缓存时间: {datetime.fromtimestamp(os.path.getmtime(model_cache))}")
-        print("✅ 已成功找到模型缓存")
+        print(f"\n✅ Found model cache: {model_cache}")  # 发现模型缓存
+        print(f"   Cache time: {datetime.fromtimestamp(os.path.getmtime(model_cache))}")  # 缓存时间
+        print("✅ Model cache found")  # 已成功找到模型缓存
     
     os.makedirs(cache_dir, exist_ok=True)
     
     # Step 1: 加载数据
-    print("📌 加载训练数据和测试数据...")
+    print("📌 Loading training and test data...")  # 加载训练数据和测试数据...
     train_df = get_all_click_df(data_path=data_path, offline=True)  # 训练数据
     test_df = pd.read_csv(data_path + 'testA_click_log.csv')  # 测试数据
-    print(f"✅ 训练集 {len(train_df)} 条，测试集 {len(test_df)} 条")
+    print(f"✅ Train records: {len(train_df)}, test records: {len(test_df)}")  # 训练集...测试集...
     
     # Step 2: 准备相关数据
     item_info_df = get_item_info_df(data_path)
@@ -288,7 +288,7 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     item_topk_click = get_item_topk_click(train_df, k=50)
     
     # Step 3: 加载并抽样 embedding，构建 embedding 相似度
-    print("🚀 Step 3：加载文章 embedding 并抽样构建相似度")
+    print("🚀 Step 3: Loading article embeddings and sampling for similarity")  # 加载文章 embedding 并抽样构建相似度
     emb_sample_n = 1000
     item_emb_df = pd.read_csv(data_path + '/articles_emb.csv').sample(n=emb_sample_n, random_state=42)
     emb_item_ids = set(item_emb_df['article_id'])
@@ -296,10 +296,10 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     
     # embedding_sim 只用 click_df_for_emb，而不要污染主流程的 train_df
     emb_i2i_sim = embdding_sim(click_df_for_emb, item_emb_df, save_path=cache_dir, topk=10)
-    print(f"✅ Step 3：完成 embedding 相似度计算")
+    print(f"✅ Step 3: Embedding similarity computation completed")  # 完成 embedding 相似度计算
     
     # Step 4: 首先生成YouTubeDNN召回并提取用户嵌入
-    print("🔄 Step 4.1: 生成YouTubeDNN召回并提取用户嵌入...")
+    print("🔄 Step 4.1: Generate YouTubeDNN recall and extract user embeddings...")  # 生成YouTubeDNN召回并提取用户嵌入...
     
     # 合并数据并增加时间戳排序
     all_df = pd.concat([train_df, test_df], ignore_index=True)
@@ -318,16 +318,16 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     # 然后加载生成的用户嵌入
     user_emb_path = os.path.join(cache_dir, 'youtube_embeddings.pkl')  # 注意这里改用正确的文件名
     if os.path.exists(user_emb_path):
-        print(f"[online_predict] ✅ 加载用户嵌入：{user_emb_path}")
+        print(f"[online_predict] ✅ Loaded user embeddings: {user_emb_path}")  # 加载用户嵌入
         with open(user_emb_path, 'rb') as f:
             cache_data = pickle.load(f)
             user_embeddings = cache_data['user_embeddings']
     else:
-        print("[online_predict] ⚠️ 无法找到用户嵌入文件")
+        print("[online_predict] ⚠️ User embedding file not found")  # 无法找到用户嵌入文件
         user_embeddings = {}
     
     # Step 5: 生成传统ItemCF召回
-    print("🔄 Step 4.2: 生成传统ItemCF召回...")
+    print("🔄 Step 4.2: Generating traditional ItemCF recall...")  # 生成传统ItemCF召回...
     
     # 合并训练集和测试集来获取完整的用户-物品交互字典
     all_df = pd.concat([train_df, test_df], ignore_index=True)
@@ -355,7 +355,7 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     )
     
     # Step 6: 生成基于Embedding的ItemCF召回
-    print("🔄 Step 4.3: 生成基于Embedding的ItemCF召回...")
+    print("🔄 Step 4.3: Generating embedding-based ItemCF recall...")  # 生成基于Embedding的ItemCF召回...
     itemcf_emb_recall_dict = generate_itemcf_embedding_recall_dict(
         val_df=test_df,
         emb_i2i_sim=emb_i2i_sim,  # 直接使用embedding相似度
@@ -369,12 +369,12 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     )
     
     # Step 7: 生成基于Embedding的UserCF召回
-    print("\n🔄 Step 4.4: 生成基于Embedding的UserCF召回...")
+    print("\n🔄 Step 4.4: Generating embedding-based UserCF recall...")  # 生成基于Embedding的UserCF召回...
     
     # 检查用户嵌入的可用性
     if not user_embeddings:
-        print("⚠️ 警告：用户嵌入为空")
-        print(f"用户嵌入数量: {len(user_embeddings)}")
+        print("⚠️ Warning: user embeddings are empty")  # 警告：用户嵌入为空
+        print(f"User embedding count: {len(user_embeddings)}")  # 用户嵌入数量
     
     u2u_emb_sim = u2u_embedding_sim(
         click_df=test_df,  # 注意这里使用test_df而不是val_df
@@ -385,11 +385,11 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     )
     
     # 打印用户相似度矩阵的统计信息
-    print(f"\n用户相似度矩阵统计:")
-    print(f"总用户数: {len(test_df['user_id'].unique())}")
-    print(f"相似度矩阵中的用户数: {len(u2u_emb_sim)}")
+    print(f"\nUser similarity matrix stats:")  # 用户相似度矩阵统计
+    print(f"Total users: {len(test_df['user_id'].unique())}")  # 总用户数
+    print(f"Users in similarity matrix: {len(u2u_emb_sim)}")  # 相似度矩阵中的用户数
     
-    print("\n🔄 Step 4.5: 生成基于Embedding的UserCF的召回结果...")
+    print("\n🔄 Step 4.5: Generating embedding-based UserCF recall results...")  # 生成基于Embedding的UserCF的召回结果...
     usercf_emb_recall_dict = generate_usercf_recall_dict(
         click_df=test_df,  # 注意这里使用test_df而不是val_df
         user_item_time_dict=user_item_time_dict,
@@ -404,7 +404,7 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     )
     
     # Step 8: 合并召回结果
-    print("\n🔄 合并多路召回结果...")
+    print("\n🔄 Combining multiple recall results...")  # 合并多路召回结果...
     # 创建多路召回字典
     user_multi_recall_dict = {
         'itemcf': itemcf_recall_dict,
@@ -430,7 +430,7 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
     )
     
     # Step 9: 生成提交文件
-    print("\n📝 生成提交文件...")
+    print("\n📝 Generating submission file...")  # 生成提交文件...
     # 将召回结果转换为DataFrame格式
     recall_list = []
     for user_id, items in final_recall_dict.items():
@@ -456,7 +456,7 @@ def online_predict(use_cache=True, recall_num=50, epochs=10, batch_size=32, embe
         model_name='multi_recall'
     )
     
-    print("✅ 提交文件生成完成！")
+    print("✅ Submission file generated!")  # 提交文件生成完成！
 
 if __name__ == '__main__':
     # 配置参数
@@ -468,7 +468,7 @@ if __name__ == '__main__':
     
     # 检查设备
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"使用设备: {device}")
+    print(f"Using device: {device}")  # 使用设备
     
     # 运行在线预测
     online_predict(
