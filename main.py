@@ -8,7 +8,7 @@ from tqdm import tqdm
 warnings.filterwarnings('ignore')
 
 from data_processing import get_all_click_df
-from utils import get_user_item_time, get_item_topk_click
+from utils import get_user_item_time_dict, get_item_topk_click
 from models.recall_baseline import itemcf_sim, item_based_recommend, generate_user_recall_dict
 from submission import submit
 from data_processing import get_item_info_df
@@ -41,7 +41,7 @@ def main(sim_version='submit_v1', recall_version='submit_v1', use_cache=True):
 
     # Step 4：用户-文章时间序列
     print("📌 [Step 4] Computing user-article click time sequence...")  # 计算用户-文章点击时间序列
-    user_item_time_dict = get_user_item_time(all_click_df)
+    user_item_time_dict = get_user_item_time_dict(all_click_df)
     print(f"✅ User-article time sequence computed, users: {len(user_item_time_dict)}")  # 用户-文章时间序列计算完成
 
     # Step 5~8：召回参数配置
@@ -68,7 +68,7 @@ def main(sim_version='submit_v1', recall_version='submit_v1', use_cache=True):
     # 生成推荐字典（只为 testA 用户生成）
     user_recall_items_dict = generate_user_recall_dict(
         val_df=tst_users_df,
-        user_item_time_dict=get_user_item_time(all_click_df),
+        user_item_time_dict=get_user_item_time_dict(all_click_df),
         i2i_sim=i2i_sim,
         sim_item_topk=10,
         recall_item_num=10,
